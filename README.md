@@ -27,27 +27,7 @@ A clean, modern, and responsive Currency Converter web application that allows u
 
 ```
 
-## 🚀 Getting Started
 
-Follow these steps to run the project locally.
-
-### 1. Clone the Repository
-
-```bash
-git clone YOUR_REPOSITORY_LINK
-```
-
-### 2. Open the Project Folder
-
-```bash
-cd Currency-Converter
-```
-
-### 3. Run the Application
-
-Open the `index.html` file in your web browser.
-
-No additional installation or API key is required.
 
 ## 🌐 API Used
 
@@ -57,17 +37,7 @@ Frankfurter provides exchange rate data for currency conversion.
 
 API Documentation: https://www.frankfurter.app/docs/
 
-## 📂 Project Structure
 
-```text
-Currency-Converter/
-│
-├── index.html
-├── style.css
-├── script.js
-├── screenshots/
-│   └── preview.png
-└── README.md
 ```
 
 ## 🎯 Project Objective
