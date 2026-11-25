@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Currency Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#e9efe7;
+  --card:#fbfcfa;
+  --ink:#12332b;
+  --muted:#5b7068;
+  --line:#cfdad1;
+  --brass:#b9822a;
+  --brass-dark:#8f6118;
+  --danger:#a63a2b;
+  --danger-bg:#f9e9e5;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:var(--sans);color:var(--ink);background:var(--paper);
+  background-image:repeating-radial-gradient(circle at 20% -10%,transparent 0 22px,rgba(18,51,43,.045) 22px 23px);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:clamp(20px,5vw,56px) 16px 0;
+}
+main{width:100%;max-width:520px;flex:1}
+h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(2rem,6vw,2.6rem);
+  letter-spacing:-.02em;margin:0 0 6px;text-align:center;
+}
+.sub{text-align:center;color:var(--muted);margin:0 0 28px;font-size:1rem}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:clamp(18px,4vw,32px);
+  box-shadow:0 1px 2px rgba(18,51,43,.06),0 18px 40px -18px rgba(18,51,43,.28);
+}
+label,.lbl{display:block;font-size:.9rem;font-weight:600;margin-bottom:8px}
+.amount{position:relative;margin-bottom:20px}
+.amount input{
+  width:100%;font:500 1.6rem var(--serif);color:var(--ink);
+  padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:#fff;
+}
+.amount input[aria-invalid="true"]{border-color:var(--danger)}
+.field-err{color:var(--danger);font-size:.85rem;margin:6px 0 0;min-height:1.2em}
+input:focus,select:focus,button:focus-visible{outline:3px solid rgba(185,130,42,.45);outline-offset:1px;border-color:var(--brass)}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+.sel{position:relative}
+.sel .flag{
+  position:absolute;left:12px;bottom:15px;width:26px;height:18px;object-fit:cover;
+  border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.12);pointer-events:none;
+}
+select{
+  width:100%;appearance:none;-webkit-appearance:none;
+  font:600 1rem var(--sans);color:var(--ink);
+  padding:14px 34px 14px 46px;
+  border:1.5px solid var(--line);border-radius:12px;background:#fff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2312332b' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")
+    no-repeat right 14px center;
+  cursor:pointer;
+}
+.swap{
+  width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line);background:#fff;
+  color:var(--ink);cursor:pointer;display:grid;place-items:center;
+  transition:transform .35s,background .2s,color .2s;
+}
+.swap:hover{background:var(--ink);color:#fff}
+.swap.spin{transform:rotate(180deg)}
+.result{
+  margin-top:24px;padding:20px;border-radius:14px;background:var(--ink);color:#f3f6f1;
+  min-height:128px;
+}
+.result .from{font-size:.95rem;color:#b8cbc2}
+.result .to{
+  font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,7vw,2.6rem);
+  line-height:1.15;margin:6px 0 10px;word-break:break-word;
+}
+.result .rate{font-size:.95rem;color:#e4c98f;font-weight:500}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.updated{color:var(--muted);font-size:.85rem}
+.reset{
+  font:600 .9rem var(--sans);color:var(--brass-dark);background:none;
+  border:1.5px solid var(--brass);border-radius:999px;padding:8px 18px;cursor:pointer;
+}
+.reset:hover{background:var(--brass);color:#fff}
+.alert{
+  display:none;margin-top:16px;padding:12px 14px;border-radius:10px;
+  background:var(--danger-bg);color:var(--danger);font-size:.92rem;
+}
+.alert.show{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.alert button{font:600 .88rem var(--sans);color:var(--danger);background:none;border:0;text-decoration:underline;cursor:pointer;padding:0}
+.loading .to{opacity:.45}
+.loading .to::after{content:"";display:inline-block;width:.6em;height:.6em;margin-left:.4em;border:2px solid #e4c98f;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+footer{width:100%;text-align:center;color:var(--muted);font-size:.85rem;padding:32px 0 24px}
+@media (max-width:480px){
+  .pair{grid-template-columns:1fr;gap:10px}
+  .swap{justify-self:center;transform:rotate(90deg)}
+  .swap.spin{transform:rotate(270deg)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Currency Converter</h1>
+  <p class="sub">Live exchange rates, converted as you type.</p>
+
+  <section class="card" aria-label="Currency converter">
+    <div class="amount">
+      <label for="amount">Amount</label>
+      <input id="amount" type="text" inputmode="decimal" autocomplete="off" value="1" aria-describedby="amountErr">
+      <p class="field-err" id="amountErr" role="alert"></p>
+    </div>
+
+    <div class="pair">
+      <div class="sel">
+        <label for="from">From</label>
+        <img class="flag" id="fromFlag" alt="">
+        <select id="from"></select>
+      </div>
+      <button class="swap" id="swap" type="button" aria-label="Swap currencies">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4L3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>
+      </button>
+      <div class="sel">
+        <label for="to">To</label>
+        <img class="flag" id="toFlag" alt="">
+        <select id="to"></select>
+      </div>
+    </div>
+
+    <div class="result" id="result" aria-live="polite">
+      <div class="from" id="resFrom">&nbsp;</div>
+      <div class="to" id="resTo">&nbsp;</div>
+      <div class="rate" id="resRate">&nbsp;</div>
+    </div>
+
+    <div class="alert" id="alert" role="alert">
+      <span id="alertMsg"></span>
+      <button type="button" id="retry">Try again</button>
+    </div>
+
+    <div class="meta">
+      <span class="updated" id="updated">Rates not loaded yet</span>
+      <button class="reset" id="reset" type="button">Reset</button>
+    </div>
+  </section>
+</main>
+<footer>&copy; <span id="year"></span> Currency Converter. Rates are indicative and provided by open.er-api.com.</footer>
+
+<script>
+(function () {
+  var CURRENCIES = [
+    ["USD","US Dollar","us"],["EUR","Euro","eu"],["GBP","British Pound","gb"],
+    ["PKR","Pakistani Rupee","pk"],["INR","Indian Rupee","in"],["AED","UAE Dirham","ae"],
+    ["SAR","Saudi Riyal","sa"],["CAD","Canadian Dollar","ca"],["AUD","Australian Dollar","au"],
+    ["JPY","Japanese Yen","jp"],["CNY","Chinese Yuan","cn"],["CHF","Swiss Franc","ch"]
+  ];
+  var DEFAULTS = { from: "USD", to: "PKR", amount: "1" };
+  var API = "https://open.er-api.com/v6/latest/";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var amountEl = $("amount"), fromEl = $("from"), toEl = $("to");
+  var cache = {};          // base code -> { rates, updated }
+  var reqId = 0, timer;
+
+  function flagUrl(code) {
+    var c = CURRENCIES.filter(function (x) { return x[0] === code; })[0];
+    return "https://flagcdn.com/w40/" + c[2] + ".png";
+  }
+
+  function fillSelect(sel, value) {
+    sel.innerHTML = CURRENCIES.map(function (c) {
+      return '<option value="' + c[0] + '">' + c[0] + " \u2013 " + c[1] + "</option>";
+    }).join("");
+    sel.value = value;
+  }
+
+  function syncFlags() {
+    $("fromFlag").src = flagUrl(fromEl.value);
+    $("toFlag").src = flagUrl(toEl.value);
+  }
+
+  function fmt(n, max) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: max }).format(n);
+  }
+
+  function readAmount() {
+    var v = amountEl.value.trim();
+    if (v === "") return { err: "Enter an amount to convert." };
+    if (!/^\d*\.?\d+$|^\d+\.$/.test(v)) return { err: "Use numbers only, for example 250 or 99.50." };
+    var n = parseFloat(v);
+    if (!(n > 0)) return { err: "Amount must be greater than zero." };
+    if (n > 1e15) return { err: "That amount is too large." };
+    return { value: n };
+  }
+
+  function showAlert(msg) {
+    $("alertMsg").textContent = msg;
+    $("alert").classList.add("show");
+  }
+  function hideAlert() { $("alert").classList.remove("show"); }
+
+  function render(amount, rate, updated) {
+    var f = fromEl.value, t = toEl.value;
+    $("resFrom").textContent = fmt(amount, 6) + " " + f + " =";
+    $("resTo").textContent = fmt(amount * rate, 4) + " " + t;
+    $("resRate").textContent = "1 " + f + " = " + fmt(rate, rate < 1 ? 6 : 4) + " " + t;
+    $("updated").textContent = "Rates last updated: " + updated;
+  }
+
+  async function getRates(base) {
+    if (cache[base] && Date.now() - cache[base].fetched < 10 * 60 * 1000) return cache[base];
+    var res = await fetch(API + base);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var data = await res.json();
+    if (data.result !== "success" || !data.rates) throw new Error("Bad response");
+    var d = new Date(data.time_last_update_utc);
+    cache[base] = {
+      rates: data.rates,
+      fetched: Date.now(),
+      updated: isNaN(d) ? data.time_last_update_utc : d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
+    };
+    return cache[base];
+  }
+
+  async function convert() {
+    var a = readAmount();
+    var errEl = $("amountErr");
+    if (a.err) {
+      errEl.textContent = a.err;
+      amountEl.setAttribute("aria-invalid", "true");
+      $("resTo").textContent = "\u2014";
+      $("resFrom").innerHTML = "&nbsp;";
+      $("resRate").innerHTML = "&nbsp;";
+      return;
+    }
+    errEl.textContent = "";
+    amountEl.removeAttribute("aria-invalid");
+
+    var f = fromEl.value, t = toEl.value, id = ++reqId;
+
+    if (f === t) { hideAlert(); render(a.value, 1, cache[f] ? cache[f].updated : "n/a"); return; }
+
+    $("result").classList.add("loading");
+    try {
+      var data = await getRates(f);
+      if (id !== reqId) return;          // a newer request superseded this one
+      var rate = data.rates[t];
+      if (typeof rate !== "number") throw new Error("Missing rate");
+      hideAlert();
+      render(a.value, rate, data.updated);
+    } catch (e) {
+      if (id !== reqId) return;
+      showAlert("We couldn\u2019t load exchange rates. Check your internet connection and try again.");
+      $("resTo").textContent = "\u2014";
+      $("resRate").innerHTML = "&nbsp;";
+    } finally {
+      if (id === reqId) $("result").classList.remove("loading");
+    }
+  }
+
+  // Keep only digits and one decimal point as the user types
+  amountEl.addEventListener("input", function () {
+    var v = amountEl.value.replace(/[^\d.]/g, "");
+    var i = v.indexOf(".");
+    if (i !== -1) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, "");
+    if (v !== amountEl.value) amountEl.value = v;
+    clearTimeout(timer);
+    timer = setTimeout(convert, 250);
+  });
+
+  function onSelect() { syncFlags(); convert(); }
+  fromEl.addEventListener("change", onSelect);
+  toEl.addEventListener("change", onSelect);
+
+  $("swap").addEventListener("click", function () {
+    var tmp = fromEl.value;
+    fromEl.value = toEl.value;
+    toEl.value = tmp;
+    this.classList.toggle("spin");
+    syncFlags();
+    convert();
+  });
+
+  $("reset").addEventListener("click", function () {
+    amountEl.value = DEFAULTS.amount;
+    fromEl.value = DEFAULTS.from;
+    toEl.value = DEFAULTS.to;
+    syncFlags();
+    convert();
+  });
+
+  $("retry").addEventListener("click", function () { delete cache[fromEl.value]; convert(); });
+
+  $("year").textContent = new Date().getFullYear();
+  fillSelect(fromEl, DEFAULTS.from);
+  fillSelect(toEl, DEFAULTS.to);
+  syncFlags();
+  convert();
+})();
+</script>
+</body>
+</html>
